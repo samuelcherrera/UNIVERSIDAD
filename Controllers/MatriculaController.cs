@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Security.Claims;
 using System.Web.Http;
 using UNIVERSIDAD.Classes;
 using UNIVERSIDAD.Models;   
@@ -41,15 +42,38 @@ namespace UNIVERSIDAD.Controllers
 
         [HttpPost]
         [Route("IngresarMatricula")]
-        public string Insertar([FromBody] Matricula matricula)
+        public IHttpActionResult IngresarMatricula([FromBody] Matricula matricula)
         {
+            if (matricula == null || matricula.idEstudiante == 0)
+            {
+                return BadRequest("Error: Datos de matrícula incompletos o nulos. Se requiere idEstudiante.");
+            }
+
+            // Obtener el idEstudiante del estudiante autenticado desde el token
+            var identity = (ClaimsIdentity)User.Identity;
+            var idEstudianteClaim = identity.Claims.FirstOrDefault(c => c.Type == "idEstudiante");
+            if (idEstudianteClaim == null)
+            {
+                return Unauthorized();
+            }
+
+            int idEstudianteAutenticado = int.Parse(idEstudianteClaim.Value);
+
+            // Validar que el idEstudiante de la matrícula coincida con el del token
+            if (matricula.idEstudiante != idEstudianteAutenticado)
+            {
+                return Unauthorized(); // El estudiante no tiene permiso para ingresar esta matrícula
+            }
+
             clsMatricula Matricula = new clsMatricula();
 
-            //SE LE ASIGNA EL OBJETO empleado AL OBJETO empleado DE LA CLASE clsEmpleado 
-            Matricula.matricula = matricula;
+            // Insertar la matrícula
+            var resultado = Matricula.Insertar(matricula);
 
-            return Matricula.Insertar();
+            return Ok(resultado);
         }
+
+
         [HttpPut]
         [Route("Actualizar")]
         public string Actualizar([FromBody] Matricula matriculaActualizada)
@@ -59,9 +83,20 @@ namespace UNIVERSIDAD.Controllers
                 return "Error: Datos de matrícula incompletos o nulos. Se requiere Id y SemestreMatricula.";
             }
 
+            // Obtener el idEstudiante del estudiante autenticado desde el token
+            var identity = (ClaimsIdentity)User.Identity;
+            var idEstudianteClaim = identity.Claims.FirstOrDefault(c => c.Type == "idEstudiante");
+            if (idEstudianteClaim == null)
+            {
+                return "Error: No se pudo obtener el id del estudiante autenticado.";
+            }
+
+            int idEstudianteAutenticado = int.Parse(idEstudianteClaim.Value);
+
             clsMatricula Matricula = new clsMatricula();
-            // Ya no necesitas asignar a Matricula.matricula, pasamos el objeto directamente
-            return Matricula.Actualizar(matriculaActualizada);
+
+            // Pasar los argumentos requeridos al método Actualizar
+            return Matricula.Actualizar(matriculaActualizada, idEstudianteAutenticado);
         }
 
 

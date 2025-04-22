@@ -14,25 +14,31 @@ namespace UNIVERSIDAD.Classes
         public Matricula matricula { get; set; } //PARA MANIPULAR LA TABLA MATRICULA
 
 
-        public String Insertar()
+        public String Insertar(Matricula matricula)
         {
             try
             {
+                if (matricula == null || matricula.idEstudiante == 0)
+                {
+                    return "Error: Datos de matrícula incompletos o nulos. Se requiere idEstudiante.";
+                }
+
                 // Calcula el TotalMatricula antes de agregar la matrícula a la base de datos
                 if (matricula != null)
                 {
                     matricula.TotalMatricula = matricula.NumeroCreditos * matricula.ValorCredito;
                 }
 
-                DBUniversidad.Matriculas.Add(matricula); // agg una nueva matricula a la tabla MATRICULA (INSERT)
-                DBUniversidad.SaveChanges(); // guarda cambios en la bd
-                return "matricula ingresada correctamente " + (matricula.Estudiante != null ? matricula.Estudiante.Documento : "");
+                DBUniversidad.Matriculas.Add(matricula); // Agregar una nueva matrícula
+                DBUniversidad.SaveChanges(); // Guardar cambios en la base de datos
+                return "Matrícula ingresada correctamente " + (matricula.Estudiante != null ? matricula.Estudiante.Documento : "");
             }
             catch (Exception ex)
             {
-                return "error al insertar la matricula " + ex.Message;
+                return "Error al insertar la matrícula: " + ex.Message;
             }
         }
+
 
 
         /* 
@@ -72,11 +78,11 @@ namespace UNIVERSIDAD.Classes
             return matriculas;
         }
 
-        public String Actualizar(Matricula matriculaActualizada)
+        public String Actualizar(Matricula matriculaActualizada, int idEstudianteAutenticado)
         {
             try
             {
-                if (matriculaActualizada == null || matriculaActualizada.idMatricula==0)
+                if (matriculaActualizada == null || matriculaActualizada.idMatricula == 0)
                 {
                     return "Error: Se debe proporcionar un Id de matrícula válido para actualizar.";
                 }
@@ -88,13 +94,18 @@ namespace UNIVERSIDAD.Classes
                     return "No existe una matrícula con el Id: " + matriculaActualizada.idMatricula;
                 }
 
-                // Actualiza las propiedades de la matrícula existente con los valores del objeto 'matriculaActualizada'
+                // Validar que la matrícula pertenece al estudiante autenticado
+                if (existingMatricula.idEstudiante != idEstudianteAutenticado)
+                {
+                    return "Error: No tienes permiso para actualizar esta matrícula.";
+                }
+
+                // Actualiza las propiedades de la matrícula existente
                 existingMatricula.NumeroCreditos = matriculaActualizada.NumeroCreditos;
                 existingMatricula.ValorCredito = matriculaActualizada.ValorCredito;
                 existingMatricula.FechaMatricula = matriculaActualizada.FechaMatricula;
                 existingMatricula.SemestreMatricula = matriculaActualizada.SemestreMatricula;
                 existingMatricula.MateriasMatriculadas = matriculaActualizada.MateriasMatriculadas;
-                // Actualiza otras propiedades aquí si es necesario
 
                 // Recalcula el TotalMatricula
                 existingMatricula.TotalMatricula = existingMatricula.NumeroCreditos * existingMatricula.ValorCredito;
@@ -107,6 +118,7 @@ namespace UNIVERSIDAD.Classes
                 return "Error al actualizar la matrícula: " + ex.Message;
             }
         }
+
 
 
 
