@@ -33,15 +33,18 @@ namespace UNIVERSIDAD.Controllers
 
             return Matricula.Insertar();
         }
-
         [HttpPut]
         [Route("Actualizar")]
-        public string Actualizar([FromBody] Matricula matricula)
+        public string Actualizar([FromBody] Matricula matriculaActualizada)
         {
-            clsMatricula Matricula = new clsMatricula();
-            Matricula.matricula = matricula;
+            if (matriculaActualizada == null || matriculaActualizada.idMatricula == 0 || string.IsNullOrEmpty(matriculaActualizada.SemestreMatricula))
+            {
+                return "Error: Datos de matrícula incompletos o nulos. Se requiere Id y SemestreMatricula.";
+            }
 
-            return Matricula.Actualizar();
+            clsMatricula Matricula = new clsMatricula();
+            // Ya no necesitas asignar a Matricula.matricula, pasamos el objeto directamente
+            return Matricula.Actualizar(matriculaActualizada);
         }
 
 
@@ -50,6 +53,13 @@ namespace UNIVERSIDAD.Controllers
         public string Eliminar(string Documento, string Semestre)
         {
             clsMatricula Matricula = new clsMatricula();
+            Matricula.matricula = Matricula.ConsultarPorDocumentoYSemestre(Documento, Semestre);
+
+            if (Matricula.matricula == null)
+            {
+                return $"No existe matrícula para el documento {Documento} en el semestre {Semestre}.";
+            }
+
             return Matricula.Eliminar();
         }
     }
