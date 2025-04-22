@@ -63,14 +63,14 @@ namespace UNIVERSIDAD.Classes
         }
 
         public List<Matricula> ConsultarPorDocumento(string documento)
-{
-    // Utilizamos Where para filtrar las matrículas que cumplen AMBAS condiciones
-    var matriculas = DBUniversidad.Matriculas
-        .Where(e => e.Estudiante.Documento == documento)
-        .ToList(); // Devolvemos la lista de matriculas asociadas al documento
+        {
+            // Utilizamos Where para filtrar las matrículas que cumplen AMBAS condiciones
+            var matriculas = DBUniversidad.Matriculas
+                .Where(e => e.Estudiante.Documento == documento)
+                .ToList(); // Devolvemos la lista de matriculas asociadas al documento
 
-    return matriculas;
-}
+            return matriculas;
+        }
 
         public String Actualizar(Matricula matriculaActualizada)
         {

@@ -16,10 +16,27 @@ namespace UNIVERSIDAD.Controllers
 
         [HttpGet]
         [Route("ConsultarPorDocumentoYSemestre")]
-        public Matricula ConsultarXDocumento(String Documento, String Semestre)
+        public Matricula ConsultarPorDocumentoYSemestre(String Documento, String Semestre)
         {
             clsMatricula Matricula = new clsMatricula();
             return Matricula.ConsultarPorDocumentoYSemestre(Documento, Semestre);
+        }
+
+        [HttpGet]
+        [Route("ConsultarPorDocumento")]
+        public IHttpActionResult ConsultarPorDocumento(string documento)
+        {
+            clsMatricula matricula = new clsMatricula();
+
+            // Llamar al método ConsultarXDocumento
+            var resultado = matricula.ConsultarPorDocumento(documento);
+
+            if (resultado == null || !resultado.Any())
+            {
+                return NotFound(); // Retornar 404 si no se encuentran matrículas
+            }
+
+            return Ok(resultado); // Retornar las matrículas encontradas
         }
 
         [HttpPost]
